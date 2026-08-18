@@ -1,0 +1,28 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+*.desktop
+
+# Editor & IDE Directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+
+# Temporary, Cache & Log Files
+*.log
+*.tmp
+/tmp/
+*.deb
+*.tar.gz
+*.zip
+
+# Environment & Secret Files (Safety Precaution)
+.env
+.env.*
+*.pem
+*.key
+id_rsa
+id_ed25519
