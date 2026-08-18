@@ -1,0 +1,40 @@
+Set up a reusable local Codex multi-agent team for me.
+
+Use the current Sol model only as the main lead/orchestrator for planning, architecture, hard debugging, delegation, and final decisions.
+
+Create these agents under ~/.codex/agents/:
+- coder: gpt-5.6-luna — implements plans, edits code, runs tests
+- researcher: gpt-5.6-luna — researches the repo and official docs, returns concise findings
+- browser_debugger: gpt-5.6-luna — uses Chrome DevTools MCP to reproduce UI issues and collect screenshots, console, and network evidence; must not edit application code
+- reviewer: gpt-5.6-terra — reviews actual diffs for correctness, regressions, security, performance, edge cases, and maintainability
+
+For browser_debugger use:
+[mcp_servers.chrome_devtools]
+url = "http://localhost:3000/mcp"
+startup_timeout_sec = 20
+
+STRICT MODEL-ROUTING POLICY:
+- Sol is exclusively reserved for the main/root agent.
+- NEVER spawn, create, delegate to, or configure ANY subagent using Sol.
+- This applies to named agents, generic agents, temporary agents, ad-hoc agents, background workers, reviewers, researchers, and dynamically created agents.
+- A subagent must NEVER inherit the main/root Sol model.
+- Prefer existing named agents first.
+- All unspecified or dynamically spawned subagents must use gpt-5.6-luna by default.
+- Use gpt-5.6-terra only when stronger reasoning is genuinely needed.
+- If a task appears to require a Sol subagent, DO NOT spawn it. Ask me for explicit approval first.
+- Sol approval is per-task only and must never be treated as permanent permission.
+- Configure Codex's default subagent model to gpt-5.6-luna if supported.
+
+SUBAGENT CONTEXT POLICY:
+- Configure `fork_turns = "none"` for subagent execution if supported by my installed Codex version.
+- Subagents should not automatically inherit/fork the parent conversation history.
+- Pass only the task, plan, files, constraints, and context actually needed for that delegation.
+- Apply this globally/default where supported, while preserving any existing unrelated configuration.
+- If `fork_turns` must be configured at a different scope in my installed Codex version, inspect the supported config and place it correctly instead of inventing syntax.
+
+Preferred routing:
+Sol plans -> researcher/browser_debugger investigates when needed -> coder implements -> reviewer reviews -> coder fixes valid findings -> browser_debugger verifies UI fixes when relevant -> Sol makes the final decision.
+
+Inspect my existing ~/.codex/config.toml, ~/.codex/agents/, and AGENTS.md first. Preserve existing settings and agents, do not overwrite unrelated configuration, and adapt to the Codex version actually installed instead of inventing unsupported keys.
+
+Actually create/update the local files, add reusable AGENTS.md instructions for this routing, strict no-Sol-subagent policy, and fork_turns policy. Validate the TOML/config, verify the agents are recognized if possible, and report exactly what you changed.

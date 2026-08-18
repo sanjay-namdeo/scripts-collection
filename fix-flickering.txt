@@ -1,0 +1,48 @@
+============================================================
+UBUNTU LAPTOP: BRIGHTNESS FLICKERING TROUBLESHOOTING GUIDE
+============================================================
+
+COMMAND TO CHECK DRIVER:
+lspci -k | grep -A3 VGA
+
+------------------------------------------------------------
+STEP 1: DISABLE AUTOMATIC BRIGHTNESS
+------------------------------------------------------------
+1. Open Settings -> Power.
+2. Toggle "Automatic Brightness" to OFF.
+
+------------------------------------------------------------
+STEP 2: SWITCH DISPLAY SERVER (WAYLAND VS X11)
+------------------------------------------------------------
+1. Log out of Ubuntu.
+2. Click your username.
+3. Click the GEAR ICON in the bottom-right corner.
+4. Select "Ubuntu on Xorg" (X11) instead of "Ubuntu" (Wayland).
+5. Log back in.
+
+------------------------------------------------------------
+STEP 3: DISABLE PANEL SELF REFRESH (INTEL/AMD INT. GRAPHICS)
+------------------------------------------------------------
+1. Open terminal and run:
+   sudo nano /etc/default/grub
+
+2. Find the line: GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+
+3. Modify it based on your processor:
+   - FOR INTEL: GRUB_CMDLINE_LINUX_DEFAULT="quiet splash i915.enable_psr=0"
+   - FOR AMD:   GRUB_CMDLINE_LINUX_DEFAULT="quiet splash amdgpu.dcfeaturemask=0"
+
+4. Save file: Press Ctrl+O, then Enter. Exit: Press Ctrl+X.
+5. Apply changes to system:
+   sudo update-grub
+6. Reboot your laptop.
+
+------------------------------------------------------------
+STEP 4: SWITCH TO PROPRIETARY NVIDIA DRIVERS (IF APPLICABLE)
+------------------------------------------------------------
+1. Check available drivers:
+   ubuntu-drivers devices
+2. Automatically install the official recommended driver:
+   sudo ubuntu-drivers autoinstall
+3. Reboot your laptop.
+============================================================
