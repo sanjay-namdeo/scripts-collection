@@ -8,6 +8,8 @@ A curated collection of automation scripts, system performance tweaks, hardware 
 
 | File | Type | Description |
 | :--- | :--- | :--- |
+| [`diagnose-network-drops.sh`](./diagnose-network-drops.sh) | Bash Script | 100% Standalone zero-dependency network drop & packet loss diagnostic tool for Linux |
+| [`diagnose_network_drops.py`](./diagnose_network_drops.py) | Python Script | Python companion diagnostic suite for packet drops, jitter, and kernel telemetry |
 | [`optimize-network.sh`](./optimize-network.sh) | Bash Script | Tunes TCP BBR, network buffers, fast open, disables Wi-Fi power save, and configures fast DNS |
 | [`optimize_system.sh`](./optimize_system.sh) | Bash Script | System maintenance: trims swap, cleans Snap/APT cache, vacuums journal logs, runs SSD trim |
 | [`setup-fingerprint.sh`](./setup-fingerprint.sh) | Bash Script | Installs Broadcom ControlVault 3 TOD drivers and enables PAM fingerprint authentication |
@@ -20,6 +22,37 @@ A curated collection of automation scripts, system performance tweaks, hardware 
 ## 🛠️ Script Details & Usage
 
 ### 1. `optimize-network.sh`
+### 1. `diagnose-network-drops.sh`
+**Purpose**: Advanced standalone Linux network diagnostic tool to troubleshoot and isolate intermittent packet drops, latency jitter, and TCP connection failures. **100% zero external dependencies** (uses only standard Linux out-of-the-box utilities: `/dev/tcp`, `/proc`, `/sys`, `ip`, `ping`, `ss`, `awk`, `date`, `timeout`, `mtr`/`tracepath`).
+
+#### Key Features:
+- **LAN vs WAN Drop Isolation**: Concurrently probes default gateway and target IP to isolate if packet drops are local (Wi-Fi/Ethernet) or remote (ISP/Transit/Target).
+- **Wi-Fi Power-Save & Link Diagnostics**: Detects if Linux Wi-Fi power saving (`power_save = on`) is active (the #1 cause of 100-300ms latency spikes and idle connection drops on laptops).
+- **Hop-by-Hop Trace (MTR / Tracepath)**: Auto-detects and pinpoints the exact intermediate router dropping packets.
+- **Port Transaction Probes**: Native sub-millisecond TCP handshake (`SYN -> SYN-ACK`) testing with failure burst pattern detection.
+- **Continuous / Duration-based Monitoring (`-T`)**: Run for hours or minutes to capture sporadic, intermittent drops.
+- **Timestamped Failure Logs**: Records precise ISO timestamps for every failed probe to correlate with router, firewall, or server logs.
+- **Kernel Stack Health**: Audits CPU softnet backlog drops (`/proc/net/softnet_stat`), conntrack saturation, NIC ring buffer drops, and TCP retransmit deltas.
+- **Actionable Remediation Engine**: Recommends exact Linux `sysctl`, `iw`, `ethtool`, and firewall commands to fix detected bottlenecks.
+
+#### Usage:
+```bash
+# 1. Quick diagnostic of web host on port 443:
+./diagnose-network-drops.sh -d google.com -p 443
+
+# 2. General network path & gateway diagnosis without port:
+./diagnose-network-drops.sh -d 1.1.1.1 -c 50
+
+# 3. Continuous monitoring for 2 minutes (120s) to catch intermittent drops:
+./diagnose-network-drops.sh -d 10.0.0.1 -p 8080 -T 120 -i 0.1 -o /tmp/network_drop.log
+
+# 4. JSON telemetry for monitoring scripts:
+./diagnose-network-drops.sh -d 192.168.1.1 -p 22 -c 10 --json
+```
+
+---
+
+### 2. `optimize-network.sh`
 **Purpose**: Maximizes network throughput and minimizes latency/jitter for Linux laptops and desktop systems.
 
 #### Key Features:
