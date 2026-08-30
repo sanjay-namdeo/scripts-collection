@@ -77,19 +77,32 @@ sudo ./optimize-network.sh rollback
 ---
 
 ### 2. `optimize_system.sh`
-**Purpose**: Routine system maintenance and performance optimization for Ubuntu/Debian.
+**Purpose**: Comprehensive performance acceleration and system maintenance suite for Ubuntu (Dell Latitude and compatible modern Linux laptops).
 
 #### Key Features:
-- **Boot Optimization**: Disables `NetworkManager-wait-online.service` to speed up system boot times.
-- **Memory Tuning**: Sets `vm.swappiness=10` to prioritize physical RAM usage over swap space.
-- **Snap Cleanup**: Sets Snap refresh retention limit to 2 and removes old, disabled Snap revisions to reclaim disk space.
-- **Package Management Cleanup**: Updates apt repositories, purges orphaned packages (`autoremove --purge`), and clears apt cache.
-- **Storage Maintenance**: Executes `fstrim -av` to optimize NVMe/SSD drive wear and speed.
-- **Log Management**: Vacuums `systemd` journal logs to a maximum footprint of 100MB.
+- **ZRAM Compressed Memory Swap**: Sets up `systemd-zram-generator` with `zstd` compression and priority 100 to eliminate NVMe disk swapping stalls and expand effective RAM at nanosecond latencies.
+- **Kernel Sysctl & VFS Cache Tuning**: Reduces `vm.vfs_cache_pressure` to 50 for instant directory/git/IDE navigation, tunes dirty background ratios (5%/10%) to prevent NVMe write stutters, and expands `inotify` watchers (524,288).
+- **Fast Bootloader Countdown**: Reduces GRUB boot countdown to 1 second via `/etc/default/grub.d/99-fastboot.cfg`, shaving 6-8 seconds off every system restart.
+- **Debloating Redundant Daemons**: Disables non-laptop background daemons (`cloud-init` services, `NetworkManager-wait-online`, `cups-browsed` LAN printer scanners, `ModemManager` cellular polling, `kdump`, `apport`, `spice-vdagent`).
+- **CPU & Thermal Profiles**: Sets performance/balanced platform profiles and ensures Intel `thermald` active monitoring.
+- **Storage & Flash Maintenance**: Performs continuous weekly SSD TRIM (`fstrim.timer`) and runs immediate block trim across all partitions.
+- **Snap, APT & Log Maintenance**: Purges old disabled Snap revisions, caps snap retention to 2, clears APT caches, and vacuums `journalctl` to 100MB.
+- **GPU & Wayland Acceleration**: Automatically generates hardware GPU acceleration flags for Chrome, Brave, and VS Code.
+- **Full Rollback Support**: Reverts sysctl parameters, GRUB timeout, ZRAM setup, and service states with `rollback`.
 
 #### Usage:
 ```bash
-sudo ./optimize_system.sh
+# Apply all performance optimizations
+sudo ./optimize_system.sh apply
+
+# Check system optimization status and live audit
+./optimize_system.sh status
+
+# Run package/snap/log cleanup & SSD trim only
+sudo ./optimize_system.sh clean
+
+# Rollback optimizations to system defaults
+sudo ./optimize_system.sh rollback
 ```
 
 ---
