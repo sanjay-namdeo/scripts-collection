@@ -21,7 +21,6 @@ A curated collection of automation scripts, system performance tweaks, hardware 
 
 ## 🛠️ Script Details & Usage
 
-### 1. `optimize-network.sh`
 ### 1. `diagnose-network-drops.sh`
 **Purpose**: Advanced standalone Linux network diagnostic tool to troubleshoot and isolate intermittent packet drops, latency jitter, and TCP connection failures. **100% zero external dependencies** (uses only standard Linux out-of-the-box utilities: `/dev/tcp`, `/proc`, `/sys`, `ip`, `ping`, `ss`, `awk`, `date`, `timeout`, `mtr`/`tracepath`).
 
@@ -76,7 +75,7 @@ sudo ./optimize-network.sh rollback
 
 ---
 
-### 2. `optimize_system.sh`
+### 3. `optimize_system.sh`
 **Purpose**: Comprehensive performance acceleration and system maintenance suite for Ubuntu (Dell Latitude and compatible modern Linux laptops).
 
 #### Key Features:
@@ -107,7 +106,7 @@ sudo ./optimize_system.sh rollback
 
 ---
 
-### 3. `setup-fingerprint.sh`
+### 4. `setup-fingerprint.sh`
 **Purpose**: Automated installation of proprietary Broadcom ControlVault fingerprint reader drivers on Ubuntu (Dell laptops and compatible systems).
 
 #### Key Features:

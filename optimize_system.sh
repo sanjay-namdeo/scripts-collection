@@ -79,6 +79,8 @@ configure_sysctl() {
     echo -e "\n${CYAN}[2/7] Tuning Kernel Virtual Memory, VFS Cache & Inotify Limits...${NC}"
     
     mkdir -p /etc/sysctl.d
+    # Remove legacy swappiness-only file (now consolidated into 99-performance-tuning.conf)
+    rm -f /etc/sysctl.d/99-swappiness.conf
     cat << 'EOF' > /etc/sysctl.d/99-performance-tuning.conf
 # ==============================================================================
 # System Performance & Responsiveness Tuning
@@ -124,7 +126,8 @@ configure_grub() {
 # Fast bootloader countdown (managed by optimize_system.sh)
 GRUB_TIMEOUT=1
 GRUB_TIMEOUT_STYLE=hidden
-GRUB_RECORDFAIL_TIMEOUT=0
+# Allow 5s to access GRUB menu on failed boots (0 would lock out recovery)
+GRUB_RECORDFAIL_TIMEOUT=5
 EOF
 
     if command -v update-grub &>/dev/null; then
@@ -132,6 +135,15 @@ EOF
         echo -e "${GREEN}✓ GRUB timeout set to 1s. Shaved ~7s off system boot time.${NC}"
     else
         echo -e "${YELLOW}ℹ GRUB config created at /etc/default/grub.d/99-fastboot.cfg.${NC}"
+    fi
+
+    # Neutralize kdump crashkernel reservation (reclaims ~512MB RAM on next reboot)
+    if [ -f /etc/default/grub.d/kdump-tools.cfg ] && grep -q "crashkernel" /etc/default/grub.d/kdump-tools.cfg 2>/dev/null; then
+        echo '# Disabled by optimize_system.sh (crashkernel reservation removed to reclaim ~512MB RAM)' > /etc/default/grub.d/kdump-tools.cfg
+        if command -v update-grub &>/dev/null; then
+            update-grub >/dev/null 2>&1
+        fi
+        echo -e "${GREEN}✓ Neutralized kdump crashkernel reservation (~512MB RAM reclaimed on next reboot).${NC}"
     fi
 }
 
@@ -142,10 +154,11 @@ configure_services() {
     echo -e "\n${CYAN}[4/7] Disabling Redundant & Non-Laptop Background Services...${NC}"
 
     # 1. Cloud-init (Disabled on physical laptop)
+    # Note: Ubuntu 26.04 renamed cloud-init.service to cloud-init-main.service
     mkdir -p /etc/cloud
     touch /etc/cloud/cloud-init.disabled
-    systemctl disable --now cloud-init.service cloud-config.service cloud-final.service cloud-init-local.service cloud-init-network.service 2>/dev/null || true
-    systemctl mask cloud-init.service cloud-config.service cloud-final.service cloud-init-local.service 2>/dev/null || true
+    systemctl disable --now cloud-init-main.service cloud-config.service cloud-final.service cloud-init-local.service cloud-init-network.service 2>/dev/null || true
+    systemctl mask cloud-init-main.service cloud-config.service cloud-final.service cloud-init-local.service 2>/dev/null || true
     echo -e "${GREEN}✓ Disabled cloud-init services on bare-metal laptop.${NC}"
 
     # 2. NetworkManager wait-online (Prevents boot stalls)
@@ -330,7 +343,7 @@ show_status() {
 
     # Background Services Status
     echo -e "\n${BOLD}5. Service Optimization Status:${NC}"
-    for s in cloud-init.service cups-browsed.service ModemManager.service kdump-tools.service apport.service spice-vdagent.service NetworkManager-wait-online.service; do
+    for s in cloud-init-main.service cups-browsed.service ModemManager.service kdump-tools.service apport.service spice-vdagent.service NetworkManager-wait-online.service; do
         local state="inactive"
         local enabled="disabled"
         state=$(systemctl is-active "$s" 2>/dev/null || echo "inactive")
@@ -386,7 +399,7 @@ rollback_optimizations() {
 
     # 5. Remove cloud-init disable flag & unmask services
     rm -f /etc/cloud/cloud-init.disabled
-    systemctl unmask cloud-init.service cloud-config.service cloud-final.service cloud-init-local.service 2>/dev/null || true
+    systemctl unmask cloud-init-main.service cloud-config.service cloud-final.service cloud-init-local.service 2>/dev/null || true
 
     # 6. Re-enable default desktop services
     systemctl enable cups-browsed.service 2>/dev/null || true
